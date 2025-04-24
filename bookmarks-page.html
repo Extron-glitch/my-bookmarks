@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmarks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #search {
+            padding: 10px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .bookmarks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .bookmark-tile {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-decoration: none;
+            color: #333;
+            position: relative;
+        }
+
+        .bookmark-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .bookmark-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+            color: #666;
+        }
+
+        .bookmark-name {
+            font-size: 14px;
+            text-align: center;
+            font-weight: 500;
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .bookmark-url {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+        }
+
+        .add-bookmark {
+            border: 2px dashed #ddd;
+            background-color: #fafafa;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-bookmark:hover {
+            border-color: #aaa;
+        }
+
+        .add-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+            color: #888;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .context-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .context-menu ul {
+            list-style-type: none;
+        }
+
+        .context-menu li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .context-menu li:hover {
+            background-color: #f5f5f5;
+        }
+
+        .delete-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .delete-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .delete-buttons button {
+            width: auto;
+            padding: 10px 20px;
+        }
+
+        .cancel-btn {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .bookmarks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+            
+            .bookmark-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .bookmark-name {
+                font-size: 12px;
+            }
+            
+            .bookmark-url {
+                font-size: 9px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bookmarks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+            }
+            
+            .bookmark-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
+            
+            .bookmark-name {
+                font-size: 11px;
+                -webkit-line-clamp: 1;
+            }
+            
+            .bookmark-url {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Bookmarks</h1>
+        </header>
+        
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search bookmarks...">
+        </div>
+        
+        <div class="bookmarks-grid" id="bookmarks-grid">
+            <!-- Bookmarks will be dynamically inserted here -->
+        </div>
+    </div>
+    
+    <!-- Add Bookmark Modal -->
+    <div class="modal" id="add-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Bookmark</h2>
+                <button class="close">&times;</button>
+            </div>
+            <form id="add-form">
+                <div class="form-group">
+                    <label for="bookmark-name">Name</label>
+                    <input type="text" id="bookmark-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookmark-url">URL</label>
+                    <input type="url" id="bookmark-url" required>
+                </div>
+                <button type="submit">Add Bookmark</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Bookmark Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Bookmark</h2>
+                <button class="close">&times;</button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-name">Name</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-url">URL</label>
+                    <input type="url" id="edit-url" required>
+                </div>
+                <button type="submit">Update Bookmark</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <ul>
+            <li id="edit-option">Edit</li>
+            <li id="delete-option">Delete</li>
+        </ul>
+    </div>
+    
+    <!-- Delete Confirmation -->
+    <div class="delete-confirm" id="delete-confirm">
+        <div class="delete-content">
+            <h3>Delete Bookmark</h3>
+            <p>Are you sure you want to delete this bookmark?</p>
+            <div class="delete-buttons">
+                <button class="cancel-btn" id="cancel-delete">Cancel</button>
+                <button class="delete-btn" id="confirm-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initial bookmarks (can be empty if loading from localStorage)
+        const initialBookmarks = [
+            { id: 1, name: 'Google', url: 'https://www.google.com' },
+            { id: 2, name: 'YouTube', url: 'https://www.youtube.com' },
+            { id: 3, name: 'GitHub', url: 'https://github.com' },
+            { id: 4, name: 'Wikipedia', url: 'https://www.wikipedia.org' },
+            { id: 5, name: 'Reddit', url: 'https://www.reddit.com' }
+        ];
+        
+        // DOM Elements
+        const bookmarksGrid = document.getElementById('bookmarks-grid');
+        const searchInput = document.getElementById('search');
+        const addModal = document.getElementById('add-modal');
+        const editModal = document.getElementById('edit-modal');
+        const addForm = document.getElementById('add-form');
+        const editForm = document.getElementById('edit-form');
+        const closeButtons = document.querySelectorAll('.close');
+        const contextMenu = document.getElementById('context-menu');
+        const editOption = document.getElementById('edit-option');
+        const deleteOption = document.getElementById('delete-option');
+        const deleteConfirm = document.getElementById('delete-confirm');
+        const cancelDelete = document.getElementById('cancel-delete');
+        const confirmDelete = document.getElementById('confirm-delete');
+        
+        // State variables
+        let bookmarks = [];
+        let currentBookmarkId = null;
+        
+        // Initialize the app
+        function init() {
+            loadBookmarks();
+            renderBookmarks();
+            addEventListeners();
+        }
+        
+        // Load bookmarks from localStorage
+        function loadBookmarks() {
+            const storedBookmarks = localStorage.getItem('bookmarks');
+            if (storedBookmarks) {
+                bookmarks = JSON.parse(storedBookmarks);
+            } else {
+                // Use initial bookmarks if no stored bookmarks exist
+                bookmarks = initialBookmarks;
+                saveBookmarks();
+            }
+        }
+        
+        // Save bookmarks to localStorage
+        function saveBookmarks() {
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        }
+        
+        // Render bookmarks to the grid
+        function renderBookmarks(query = '') {
+            bookmarksGrid.innerHTML = '';
+            
+            // Filter bookmarks based on search query
+            const filteredBookmarks = bookmarks.filter(bookmark => {
+                return bookmark.name.toLowerCase().includes(query.toLowerCase()) || 
+                       bookmark.url.toLowerCase().includes(query.toLowerCase());
+            });
+            
+            // Render each bookmark
+            filteredBookmarks.forEach(bookmark => {
+                const tile = document.createElement('a');
+                tile.href = bookmark.url;
+                tile.target = "_blank";
+                tile.className = 'bookmark-tile';
+                tile.dataset.id = bookmark.id;
+                
+                const icon = document.createElement('div');
+                icon.className = 'bookmark-icon';
+                icon.textContent = bookmark.name.charAt(0).toUpperCase();
+                
+                const name = document.createElement('div');
+                name.className = 'bookmark-name';
+                name.textContent = bookmark.name;
+                
+                const url = document.createElement('div');
+                url.className = 'bookmark-url';
+                url.textContent = new URL(bookmark.url).hostname;
+                
+                tile.appendChild(icon);
+                tile.appendChild(name);
+                tile.appendChild(url);
+                
+                bookmarksGrid.appendChild(tile);
+            });
+            
+            // Add "Add bookmark" tile
+            const addTile = document.createElement('div');
+            addTile.className = 'bookmark-tile add-bookmark';
+            
+            const addIcon = document.createElement('div');
+            addIcon.className = 'add-icon';
+            addIcon.textContent = '+';
+            
+            const addText = document.createElement('div');
+            addText.className = 'bookmark-name';
+            addText.textContent = 'Add bookmark';
+            
+            addTile.appendChild(addIcon);
+            addTile.appendChild(addText);
+            
+            bookmarksGrid.appendChild(addTile);
+        }
+        
+        // Add event listeners
+        function addEventListeners() {
+            // Search functionality
+            searchInput.addEventListener('input', (e) => {
+                renderBookmarks(e.target.value);
+            });
+            
+            // Add new bookmark
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.add-bookmark')) {
+                    addModal.style.display = 'flex';
+                }
+            });
+            
+            // Close modals
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    addModal.style.display = 'none';
+                    editModal.style.display = 'none';
+                });
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === addModal) {
+                    addModal.style.display = 'none';
+                }
+                if (e.target === editModal) {
+                    editModal.style.display = 'none';
+                }
+                if (e.target === deleteConfirm) {
+                    deleteConfirm.style.display = 'none';
+                }
+            });
+            
+            // Add bookmark form submission
+            addForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const nameInput = document.getElementById('bookmark-name');
+                const urlInput = document.getElementById('bookmark-url');
+                
+                // Validate URL format
+                let url = urlInput.value;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                
+                // Create new bookmark
+                const newBookmark = {
+                    id: Date.now(),
+                    name: nameInput.value,
+                    url: url
+                };
+                
+                // Add to bookmarks array
+                bookmarks.push(newBookmark);
+                saveBookmarks();
+                renderBookmarks(searchInput.value);
+                
+                // Reset form and close modal
+                nameInput.value = '';
+                urlInput.value = '';
+                addModal.style.display = 'none';
+            });
+            
+            // Edit bookmark form submission
+            editForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const idInput = document.getElementById('edit-id');
+                const nameInput = document.getElementById('edit-name');
+                const urlInput = document.getElementById('edit-url');
+                
+                // Validate URL format
+                let url = urlInput.value;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                
+                // Update bookmark
+                const id = parseInt(idInput.value);
+                const index = bookmarks.findIndex(b => b.id === id);
+                
+                if (index !== -1) {
+                    bookmarks[index].name = nameInput.value;
+                    bookmarks[index].url = url;
+                    saveBookmarks();
+                    renderBookmarks(searchInput.value);
+                }
+                
+                // Close modal
+                editModal.style.display = 'none';
+            });
+            
+            // Context menu for bookmarks
+            document.addEventListener('contextmenu', (e) => {
+                const tile = e.target.closest('.bookmark-tile:not(.add-bookmark)');
+                
+                if (tile) {
+                    e.preventDefault();
+                    currentBookmarkId = parseInt(tile.dataset.id);
+                    
+                    // Position the context menu
+                    contextMenu.style.top = `${e.pageY}px`;
+                    contextMenu.style.left = `${e.pageX}px`;
+                    contextMenu.style.display = 'block';
+                }
+            });
+            
+            // Hide context menu on click outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#context-menu')) {
+                    contextMenu.style.display = 'none';
+                }
+            });
+            
+            // Edit option in context menu
+            editOption.addEventListener('click', () => {
+                const bookmark = bookmarks.find(b => b.id === currentBookmarkId);
+                
+                if (bookmark) {
+                    document.getElementById('edit-id').value = bookmark.id;
+                    document.getElementById('edit-name').value = bookmark.name;
+                    document.getElementById('edit-url').value = bookmark.url;
+                    
+                    editModal.style.display = 'flex';
+                    contextMenu.style.display = 'none';
+                }
+            });
+            
+            // Delete option in context menu
+            deleteOption.addEventListener('click', () => {
+                deleteConfirm.style.display = 'flex';
+                contextMenu.style.display = 'none';
+            });
+            
+            // Cancel delete
+            cancelDelete.addEventListener('click', () => {
+                deleteConfirm.style.display = 'none';
+            });
+            
+            // Confirm delete
+            confirmDelete.addEventListener('click', () => {
+                bookmarks = bookmarks.filter(b => b.id !== currentBookmarkId);
+                saveBookmarks();
+                renderBookmarks(searchInput.value);
+                deleteConfirm.style.display = 'none';
+            });
+            
+            // Prevent default link behavior on right click
+            document.addEventListener('click', (e) => {
+                const tile = e.target.closest('.bookmark-tile:not(.add-bookmark)');
+                if (tile && e.button === 0) {
+                    e.preventDefault();
+                    window.open(tile.href, '_blank');
+                }
+            });
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
