@@ -10,6 +10,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: pointer !important; /* Force pointer cursor everywhere */
         }
 
         body {
@@ -68,7 +69,6 @@
             text-decoration: none;
             color: #333;
             position: relative;
-            cursor: pointer; /* Make it look clickable */
         }
 
         .bookmark-tile:hover {
@@ -116,7 +116,6 @@
         .add-bookmark {
             border: 2px dashed #ddd;
             background-color: #fafafa;
-            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -163,7 +162,6 @@
 
         .close {
             font-size: 24px;
-            cursor: pointer;
             background: none;
             border: none;
         }
@@ -190,7 +188,6 @@
             background-color: #4CAF50;
             color: white;
             border: none;
-            cursor: pointer;
             margin-top: 10px;
         }
 
@@ -214,7 +211,6 @@
 
         .context-menu li {
             padding: 10px;
-            cursor: pointer;
         }
 
         .context-menu li:hover {
@@ -312,7 +308,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>My Bookmarks 22222</h1>
+            <h1>My Bookmarks</h1>
         </header>
         
         <div class="search-container">
